@@ -1,5 +1,7 @@
 const BASE_URL = 'http://localhost:3000'
 
+// Model
+
 class Todo {
   #id
   #name
@@ -23,6 +25,8 @@ class Todo {
     return this.#done
   }
 }
+
+// API
 
 async function apiRequest(path, { method = 'GET', data }) {
   if (data !== undefined) {
@@ -55,7 +59,39 @@ async function createTodo(name) {
   return id
 }
 
+function init() {
+  const todosElement = document.querySelector('.todos')
+  const todoFormElement = document.querySelector('.todo-form')
+  const todoFormTextElement = document.querySelector('.todo-form input[name=name]')
+  
+  function addTodoElement(todo) {
+    todosElement.append(`
+    <li class="todo-item">
+      <label class="todo-toggle__container">
+        <input
+          data-todo-id="${todo.id}"
+          type="checkbox"
+          class="todo-toggle"
+          value="checked"
+        />
+        <span class="todo-toggle__checkmark"></span>
+      </label>
+      <div class="todo-name">${todo.name}</div>
+      <div data-todo-id="${todo.id}" class="todo-remove-button">x</div>
+    </li>
+    `)
+  }
+
+  // Event listeners
+  todoFormElement.addEventListener('submit', event => {
+    event.preventDefault()
+    const name = todoFormTextElement.value
+    createTodo(name)
+  })
+}
+
 const main = async () => {
+  init()
   console.log(await fetchTodoList())
   // console.log(await createTodo('hoge'))
 }
