@@ -46,7 +46,7 @@ async function apiRequest(path, { method = 'GET', data }) {
 
 async function fetchTodoList() {
   const { todoList } = await apiRequest('/todo', { method: 'GET' })
-  return todoList.map(todo => new Todo(...todo))
+  return todoList.map(todo => new Todo(todo.id, todo.name, todo.done))
 }
 
 async function createTodo(name) {
