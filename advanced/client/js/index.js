@@ -24,17 +24,17 @@ class Todo {
   get done() {
     return this.#done
   }
+
+  toggleDone() {
+    this.#done = !this.#done
+  }
 }
 
 // API
 
 async function apiRequest(path, { method = 'GET', data }) {
-  if (data !== undefined) {
-    method = 'POST'
-  }
-
   let res;
-  if (method === 'POST') {
+  if (method === 'POST' || method === 'PATCH') {
     res = await fetch(BASE_URL + path, {
       method,
       headers: {
@@ -55,18 +55,29 @@ async function fetchTodoList() {
 
 async function createTodo(name) {
   const data = { name }
-  const { id } = await apiRequest('/todo', { data })
+  const { id } = await apiRequest('/todo', { method: 'POST', data })
   return id
 }
 
-function init() {
+async function updateTodo(todo) {
+  const data = { 
+    name: todo.name,
+    done: todo.done,
+  }
+  const res = apiRequest(`/todo/${todo.id}`, { method: 'PATCH', data })
+  return res.ok
+}
+
+async function init() {
   const todosElement = document.querySelector('.todos')
   const todoFormElement = document.querySelector('.todo-form')
   const todoFormTextElement = document.querySelector('.todo-form input[name=name]')
+
+  let todoList = []
   
   // FIXME: unsafe
   async function updateTodos() {
-    const todoList = await fetchTodoList()
+    todoList = await fetchTodoList()
     let newHtml = ''
     for (const todo of todoList) {
       newHtml += `
@@ -88,6 +99,8 @@ function init() {
     todosElement.innerHTML = newHtml
   }
 
+  await updateTodos()
+
   // Event listeners
   todoFormElement.addEventListener('submit', event => {
     event.preventDefault()
@@ -95,7 +108,15 @@ function init() {
     createTodo(name).then(() => updateTodos())
   })
 
-  updateTodos()
+  const todoCheckboxElements = document.querySelectorAll('.todo-toggle')
+  for (const element of todoCheckboxElements) {
+    element.addEventListener('change', () => {
+      const id = parseInt(element.getAttribute('data-todo-id'))
+      const todo = todoList.find(todo => todo.id === id)
+      todo.toggleDone()
+      updateTodo(todo)
+    })
+  }
 }
 
 const main = async () => {
