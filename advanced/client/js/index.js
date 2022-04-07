@@ -62,7 +62,16 @@ async function updateView() {
     document.querySelector('.todos').innerHTML = newHtml
   }
 
+  async function updateItemCount() {
+    const { todoList } = currentState
+    document.querySelector('.done-items-num').innerHTML = `
+      <span class="done-items-num__value">${todoList.filter(t => t.done).length}</span><span> items done</span>
+      `
+  }
+
   updateTodos()
+  updateItemCount()
+
   registerEventListeners()
 }
 
