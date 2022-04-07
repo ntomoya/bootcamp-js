@@ -1,15 +1,45 @@
 import api from './api.js'
 
-async function init() {
-  const todosElement = document.querySelector('.todos')
-  const todoFormElement = document.querySelector('.todo-form')
-  const todoFormTextElement = document.querySelector('.todo-form input[name=name]')
+const currentState = {
+  todoList: []
+}
 
-  let todoList = []
-  
+async function updateState(func) {
+  await func()
+  await updateView()
+}
+
+async function registerEventListeners() {
+  const todoCheckboxElements = document.querySelectorAll('.todo-toggle')
+  for (const element of todoCheckboxElements) {
+    element.addEventListener('change', () => {
+      const id = parseInt(element.getAttribute('data-todo-id'))
+      const todo = currentState.todoList.find(todo => todo.id === id)
+      api.updateTodo(todo.id, todo.name, todo.done).then(() => {
+        updateState(async () => {
+          todo.toggleDone()
+        })
+      })
+    })
+  }
+
+  const todoDeleteButtonElement = document.querySelectorAll('.todo-remove-button')
+  for (const element of todoDeleteButtonElement) {
+    element.addEventListener('click', () => {
+      const id = parseInt(element.getAttribute('data-todo-id'))
+      api.deleteTodo(id).then(() => {
+        updateState(async () => {
+          currentState.todoList = todoList.filter(todo => todo.id !== id)
+        })
+      })
+    })
+  }
+}
+
+async function updateView() {
   // FIXME: unsafe
   async function updateTodos() {
-    todoList = await api.fetchTodoList()
+    const { todoList } = currentState
     let newHtml = ''
     for (const todo of todoList) {
       newHtml += `
@@ -20,6 +50,7 @@ async function init() {
               type="checkbox"
               class="todo-toggle"
               value="checked"
+              ${todo.done ? "checked" : ""}
             />
             <span class="todo-toggle__checkmark"></span>
           </label>
@@ -28,36 +59,30 @@ async function init() {
         </li>
         `
     }
-    todosElement.innerHTML = newHtml
+    document.querySelector('.todos').innerHTML = newHtml
   }
 
-  await updateTodos()
+  updateTodos()
+  registerEventListeners()
+}
 
-  // Event listeners
-  todoFormElement.addEventListener('submit', event => {
-    event.preventDefault()
-    const name = todoFormTextElement.value
-    api.createTodo(name).then(() => updateTodos())
+async function init() {
+  api.fetchTodoList().then(todoList => {
+    updateState(() => {
+      currentState.todoList = todoList
+    })
   })
 
-  const todoCheckboxElements = document.querySelectorAll('.todo-toggle')
-  for (const element of todoCheckboxElements) {
-    element.addEventListener('change', () => {
-      const id = parseInt(element.getAttribute('data-todo-id'))
-      const todo = todoList.find(todo => todo.id === id)
-      todo.toggleDone()
-      api.updateTodo(todo)
+  const todoFormElement = document.querySelector('.todo-form')
+  todoFormElement.addEventListener('submit', event => {
+    event.preventDefault()
+    const name = document.querySelector('.todo-form input[name=name]').value
+    api.createTodo(name).then(todo => {
+      updateState(async () => {
+        currentState.todoList.push(todo)
+      })
     })
-  }
-
-  const todoDeleteButtonElement = document.querySelectorAll('.todo-remove-button')
-  for (const element of todoDeleteButtonElement) {
-    element.addEventListener('click', () => {
-      const id = parseInt(element.getAttribute('data-todo-id'))
-      todoList = todoList.filter(todo => todo.id !== id)
-      api.deleteTodo(id).then(() => updateTodos())
-    })
-  }
+  })
 }
 
 const main = async () => {

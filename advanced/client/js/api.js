@@ -30,18 +30,15 @@ async function fetchTodoList() {
   return todoList.map(todo => new Todo(todo.id, todo.name, todo.done))
 }
 
-async function createTodo(name) {
-  const data = { name }
-  const { id } = await apiRequest('/todo', { method: 'POST', data })
-  return id
+async function createTodo(newName) {
+  const data = { name: newName }
+  const { id, name, done } = await apiRequest('/todo', { method: 'POST', data })
+  return new Todo(id, name, done) 
 }
 
-async function updateTodo(todo) {
-  const data = {
-    name: todo.name,
-    done: todo.done,
-  }
-  const res = apiRequest(`/todo/${todo.id}`, { method: 'PATCH', data })
+async function updateTodo(id, name, done) {
+  const data = { name, done }
+  const res = apiRequest(`/todo/${id}`, { method: 'PATCH', data })
   return res.ok
 }
 
