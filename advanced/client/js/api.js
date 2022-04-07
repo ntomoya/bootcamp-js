@@ -3,18 +3,16 @@ import { Todo } from './model.js'
 const BASE_URL = 'http://localhost:3000'
 
 async function apiRequest(path, { method = 'GET', data }) {
-  let res;
-  if (method === 'POST' || method === 'PATCH') {
-    res = await fetch(BASE_URL + path, {
-      method,
+  const init = { method }
+  if (data !== undefined) {
+    Object.assign(init, {
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
     })
-  } else {
-    res = await fetch(BASE_URL + path, { method })
   }
+  const res = await fetch(BASE_URL + path, init)
 
   let responseData
   try {
