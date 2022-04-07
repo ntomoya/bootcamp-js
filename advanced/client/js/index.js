@@ -30,7 +30,7 @@ async function registerEventListeners() {
       const id = parseInt(element.getAttribute('data-todo-id'), 10)
       api.deleteTodo(id).then(() => {
         updateState(async () => {
-          currentState.todoList = todoList.filter(todo => todo.id !== id)
+          currentState.todoList = currentState.todoList.filter(todo => todo.id !== id)
         })
       })
     })
