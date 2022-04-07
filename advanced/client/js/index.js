@@ -1,84 +1,4 @@
-const BASE_URL = 'http://localhost:3000'
-
-// Model
-
-class Todo {
-  #id
-  #name
-  #done
-
-  constructor(id, name, done = false) {
-    this.#id = id
-    this.#name = name
-    this.#done = done
-  }
-
-  get id() {
-    return this.#id
-  }
-
-  get name() {
-    return this.#name
-  }
-
-  get done() {
-    return this.#done
-  }
-
-  toggleDone() {
-    this.#done = !this.#done
-  }
-}
-
-// API
-
-async function apiRequest(path, { method = 'GET', data }) {
-  let res;
-  if (method === 'POST' || method === 'PATCH') {
-    res = await fetch(BASE_URL + path, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    })
-  } else {
-    res = await fetch(BASE_URL + path, { method })
-  }
-
-  let responseData
-  try {
-    responseData = await res.json()
-  } catch {
-    responseData = {}
-  }
-  return responseData
-}
-
-async function fetchTodoList() {
-  const { todoList } = await apiRequest('/todo', { method: 'GET' })
-  return todoList.map(todo => new Todo(todo.id, todo.name, todo.done))
-}
-
-async function createTodo(name) {
-  const data = { name }
-  const { id } = await apiRequest('/todo', { method: 'POST', data })
-  return id
-}
-
-async function updateTodo(todo) {
-  const data = { 
-    name: todo.name,
-    done: todo.done,
-  }
-  const res = apiRequest(`/todo/${todo.id}`, { method: 'PATCH', data })
-  return res.ok
-}
-
-async function deleteTodo(id) {
-  const res = await apiRequest(`/todo/${id}`, { method: 'DELETE' })
-  return res.ok
-}
+import api from './api.js'
 
 async function init() {
   const todosElement = document.querySelector('.todos')
@@ -89,7 +9,7 @@ async function init() {
   
   // FIXME: unsafe
   async function updateTodos() {
-    todoList = await fetchTodoList()
+    todoList = await api.fetchTodoList()
     let newHtml = ''
     for (const todo of todoList) {
       newHtml += `
@@ -117,7 +37,7 @@ async function init() {
   todoFormElement.addEventListener('submit', event => {
     event.preventDefault()
     const name = todoFormTextElement.value
-    createTodo(name).then(() => updateTodos())
+    api.createTodo(name).then(() => updateTodos())
   })
 
   const todoCheckboxElements = document.querySelectorAll('.todo-toggle')
@@ -126,7 +46,7 @@ async function init() {
       const id = parseInt(element.getAttribute('data-todo-id'))
       const todo = todoList.find(todo => todo.id === id)
       todo.toggleDone()
-      updateTodo(todo)
+      api.updateTodo(todo)
     })
   }
 
@@ -135,15 +55,13 @@ async function init() {
     element.addEventListener('click', () => {
       const id = parseInt(element.getAttribute('data-todo-id'))
       todoList = todoList.filter(todo => todo.id !== id)
-      deleteTodo(id).then(() => updateTodos())
+      api.deleteTodo(id).then(() => updateTodos())
     })
   }
 }
 
 const main = async () => {
   init()
-  console.log(await fetchTodoList())
-  // console.log(await createTodo('hoge'))
 }
 
 main()
