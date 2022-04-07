@@ -5,7 +5,7 @@ class Todo {
   #name
   #done
 
-  constructor(id, name, done = False) {
+  constructor(id, name, done = false) {
     this.#id = id
     this.#name = name
     this.#done = done
