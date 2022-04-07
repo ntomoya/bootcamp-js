@@ -64,30 +64,38 @@ function init() {
   const todoFormElement = document.querySelector('.todo-form')
   const todoFormTextElement = document.querySelector('.todo-form input[name=name]')
   
-  function addTodoElement(todo) {
-    todosElement.append(`
-    <li class="todo-item">
-      <label class="todo-toggle__container">
-        <input
-          data-todo-id="${todo.id}"
-          type="checkbox"
-          class="todo-toggle"
-          value="checked"
-        />
-        <span class="todo-toggle__checkmark"></span>
-      </label>
-      <div class="todo-name">${todo.name}</div>
-      <div data-todo-id="${todo.id}" class="todo-remove-button">x</div>
-    </li>
-    `)
+  // FIXME: unsafe
+  async function updateTodos() {
+    const todoList = await fetchTodoList()
+    let newHtml = ''
+    for (const todo of todoList) {
+      newHtml += `
+        <li class="todo-item">
+          <label class="todo-toggle__container">
+            <input
+              data-todo-id="${todo.id}"
+              type="checkbox"
+              class="todo-toggle"
+              value="checked"
+            />
+            <span class="todo-toggle__checkmark"></span>
+          </label>
+          <div class="todo-name">${todo.name}</div>
+          <div data-todo-id="${todo.id}" class="todo-remove-button">x</div>
+        </li>
+        `
+    }
+    todosElement.innerHTML = newHtml
   }
 
   // Event listeners
   todoFormElement.addEventListener('submit', event => {
     event.preventDefault()
     const name = todoFormTextElement.value
-    createTodo(name)
+    createTodo(name).then(() => updateTodos())
   })
+
+  updateTodos()
 }
 
 const main = async () => {
