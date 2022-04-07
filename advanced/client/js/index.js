@@ -45,7 +45,14 @@ async function apiRequest(path, { method = 'GET', data }) {
   } else {
     res = await fetch(BASE_URL + path, { method })
   }
-  return await res.json()
+
+  let responseData
+  try {
+    responseData = await res.json()
+  } catch {
+    responseData = {}
+  }
+  return responseData
 }
 
 async function fetchTodoList() {
@@ -65,6 +72,11 @@ async function updateTodo(todo) {
     done: todo.done,
   }
   const res = apiRequest(`/todo/${todo.id}`, { method: 'PATCH', data })
+  return res.ok
+}
+
+async function deleteTodo(id) {
+  const res = await apiRequest(`/todo/${id}`, { method: 'DELETE' })
   return res.ok
 }
 
@@ -115,6 +127,15 @@ async function init() {
       const todo = todoList.find(todo => todo.id === id)
       todo.toggleDone()
       updateTodo(todo)
+    })
+  }
+
+  const todoDeleteButtonElement = document.querySelectorAll('.todo-remove-button')
+  for (const element of todoDeleteButtonElement) {
+    element.addEventListener('click', () => {
+      const id = parseInt(element.getAttribute('data-todo-id'))
+      todoList = todoList.filter(todo => todo.id !== id)
+      deleteTodo(id).then(() => updateTodos())
     })
   }
 }
