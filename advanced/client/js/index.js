@@ -37,8 +37,15 @@ async function registerEventListeners() {
 }
 
 async function updateView() {
-  // FIXME: unsafe
   async function updateTodos() {
+    const escape = s => {
+      const target = s.toString()
+      return target.replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+    }
+
     const { todoList } = currentState
     let newHtml = ''
     for (const todo of todoList) {
@@ -46,7 +53,7 @@ async function updateView() {
         <li class="todo-item">
           <label class="todo-toggle__container">
             <input
-              data-todo-id="${todo.id}"
+              data-todo-id="${escape(todo.id)}"
               type="checkbox"
               class="todo-toggle"
               value="checked"
@@ -54,8 +61,8 @@ async function updateView() {
             />
             <span class="todo-toggle__checkmark"></span>
           </label>
-          <div class="todo-name">${todo.name}</div>
-          <div data-todo-id="${todo.id}" class="todo-remove-button">x</div>
+          <div class="todo-name">${escape(todo.name)}</div>
+          <div data-todo-id="${escape(todo.id)}" class="todo-remove-button">x</div>
         </li>
         `
     }
