@@ -1,4 +1,5 @@
 import api from './api.js'
+import { escapeHtml } from './lib.js'
 
 const currentState = {
   todoList: []
@@ -38,14 +39,6 @@ async function registerEventListeners() {
 
 async function updateView() {
   async function updateTodos() {
-    const escape = s => {
-      const target = s.toString()
-      return target.replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-    }
-
     const { todoList } = currentState
     let newHtml = ''
     for (const todo of todoList) {
@@ -53,7 +46,7 @@ async function updateView() {
         <li class="todo-item">
           <label class="todo-toggle__container">
             <input
-              data-todo-id="${escape(todo.id)}"
+              data-todo-id="${escapeHtml(todo.id)}"
               type="checkbox"
               class="todo-toggle"
               value="checked"
@@ -61,8 +54,8 @@ async function updateView() {
             />
             <span class="todo-toggle__checkmark"></span>
           </label>
-          <div class="todo-name">${escape(todo.name)}</div>
-          <div data-todo-id="${escape(todo.id)}" class="todo-remove-button">x</div>
+          <div class="todo-name">${escapeHtml(todo.name)}</div>
+          <div data-todo-id="${escapeHtml(todo.id)}" class="todo-remove-button">x</div>
         </li>
         `
     }
