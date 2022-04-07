@@ -13,7 +13,7 @@ async function registerEventListeners() {
   const todoCheckboxElements = document.querySelectorAll('.todo-toggle')
   for (const element of todoCheckboxElements) {
     element.addEventListener('change', () => {
-      const id = parseInt(element.getAttribute('data-todo-id'))
+      const id = parseInt(element.getAttribute('data-todo-id'), 10)
       const todo = currentState.todoList.find(todo => todo.id === id)
       api.updateTodo(todo.id, todo.name, todo.done).then(() => {
         updateState(async () => {
@@ -26,7 +26,7 @@ async function registerEventListeners() {
   const todoDeleteButtonElement = document.querySelectorAll('.todo-remove-button')
   for (const element of todoDeleteButtonElement) {
     element.addEventListener('click', () => {
-      const id = parseInt(element.getAttribute('data-todo-id'))
+      const id = parseInt(element.getAttribute('data-todo-id'), 10)
       api.deleteTodo(id).then(() => {
         updateState(async () => {
           currentState.todoList = todoList.filter(todo => todo.id !== id)
